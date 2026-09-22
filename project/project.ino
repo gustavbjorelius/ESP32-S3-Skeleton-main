@@ -12,17 +12,19 @@
 #include <time.h>
 
 
-// Remember to remove these before commiting in GitHub
-String ssid = "ssid";
-String password = "password";
+// This is the wifi settings. We assume Gustavs mobile hotspot with ssid and password 
+String ssid = "GB";
+String password = "administrator";
 
 // "tft" is the graphics libary, which has functions to draw on the screen
 TFT_eSPI tft = TFT_eSPI();
 
 // Display dimentions
+// this is simply the screen size in pixels 
 #define DISPLAY_WIDTH 320
 #define DISPLAY_HEIGHT 170
 
+// idk this sets a variable to so we can have wifi for no reason? 
 WiFiClient wifi_client;
 
 /**
@@ -33,14 +35,19 @@ WiFiClient wifi_client;
  */
 void setup() {
   // Initialize Serial for debugging
+  // idk what this means? 
   Serial.begin(115200);
   // Wait for the Serial port to be ready
+  // what is serial port? 
+  // i suppose it's the usbc? 
   while (!Serial);
+  // this doesn't happen really, it just
   Serial.println("Starting ESP32 program...");
   tft.init();
   tft.setRotation(1);
   tft.fillScreen(TFT_BLACK);
 
+  // this contros the buttons
   pinMode(PIN_BUTTON_1, INPUT_PULLUP);
   pinMode(PIN_BUTTON_2, INPUT_PULLUP);
 
@@ -68,15 +75,63 @@ void setup() {
  * This is the main loop function that runs continuously after setup.
  * Add your code here to perform tasks repeatedly.
  */
+
+// initialize the variable that is about the pages
+int currentPage = 0; 
+
+bool buttonPressed0 = false; 
+bool buttonPressed1 = false; 
+
+
+// TODOs
+
+// we want to have is screen 1 (the first we see before we press any button) 'Group 2'
+// upon button press, we have 
+
 void loop() {
+
+  buttonPressed0 = (digitalRead(PIN_BUTTON_1) == LOW);
+  buttonPressed1 = (digitalRead(PIN_BUTTON_2) == LOW);
+
+  // KNAPP 1 
+  if (buttonPressed0) {
+    currentPage = 0;
+
+  // Wait until the button is pressed 
+  while (digitalRead(PIN_BUTTON_1) == LOW) {
+  }
+}
+
+  // KNAPP 2 
+  if (buttonPressed1) {
+    currentPage = 1;
+    
+  // Wait until the button is pressed 
+  while (digitalRead(PIN_BUTTON_2) == LOW) {
+  }
+}
+
+// rita rätt sida 
+if (currentPage == 0) {
+
   tft.fillScreen(TFT_BLACK);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
   tft.setTextSize(2);
-  tft.drawString("Hello student", 10, 10);
-  
-  delay(1000);
+  tft.drawString("Hell o student", 10, 10);
+  tft.drawString(":)", 10, 50);
 }
 
+else if (currentPage == 1) {
+
+  tft.fillScreen(TFT_BLACK);
+  tft.setTextColor(TFT_WHITE, TFT_BLACK);
+  tft.setTextSize(2);
+  tft.drawString("Edil", 10, 10);
+  tft.drawString("Gustav", 30, 50);
+  tft.drawString("William", 60, 100);
+}
+
+}
 
 // TFT Pin check
   //////////////////
