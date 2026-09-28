@@ -25,7 +25,7 @@ TFT_eSPI tft = TFT_eSPI();
 #define DISPLAY_HEIGHT 170
 
 // idk this sets a variable to so we can have wifi for no reason? 
-WiFiClient wifi_client;
+//WiFiClient wifi_client;
 
 /**
  * Setup function
@@ -52,10 +52,9 @@ void setup() {
   pinMode(PIN_BUTTON_2, INPUT_PULLUP);
 
   // Connect to WIFI
-  /*
-  WiFi.begin(ssid, password);
+  //WiFi.begin(ssid, password);
 
-  // Will be stuck here until a proper wifi is configured
+  /* Will be stuck here until a proper wifi is configured
   while (WiFi.status() != WL_CONNECTED) {
     delay(1000);
     tft.fillScreen(TFT_BLACK);
@@ -69,22 +68,24 @@ void setup() {
   tft.drawString("Connected to WiFi", 10, 10);
   Serial.println("Connected to WiFi");*/
   // Add your code bellow 
-
 }
 
 /**
  * This is the main loop function that runs continuously after setup.
  * Add your code here to perform tasks repeatedly.
  */
-
+//in miliseconds
+// const means it cannot be changed 
+const unsigned int REQUIREDTIMEBETWEENACTIONS = 500; // unsigned means cant be negative
 // initialize the variable that is about the pages
-int currentPage = 0; 
-
-bool buttonPressed0 = false; 
-bool buttonPressed1 = false; 
-//Sant om current page är utritad
+int currentPage = 0;
 bool drawn = false;
-
+bool buttonPressed0 = false;
+bool buttonPressed1 = false;
+// count number of millis since we started the esp
+unsigned int oldTime = millis(); 
+// puts 
+unsigned int elapsedTimeSinceAction = 0;
 
 // TODOs
 
@@ -92,40 +93,53 @@ bool drawn = false;
 // upon button press, we have 
 
 void loop() {
-
+  unsigned int newTime = millis();
+  elapsedTimeSinceAction += newTime-oldTime;
+  oldTime = newTime;
+  if (elapsedTimeSinceAction > REQUIREDTIMEBETWEENACTIONS) {
+    elapsedTimeSinceAction = REQUIREDTIMEBETWEENACTIONS;
+  }
+  //Gets button states
   buttonPressed0 = (digitalRead(PIN_BUTTON_1) == LOW);
   buttonPressed1 = (digitalRead(PIN_BUTTON_2) == LOW);
 
   // KNAPP 1 
-  if (buttonPressed0 && drawn && currentPage == 1) {
-    currentPage = 0;
+  if (buttonPressed0 && currentPage != 0 && drawn && elapsedTimeSinceAction >= REQUIREDTIMEBETWEENACTIONS) {
+    currentPage -= 1;
     drawn = false;
+    elapsedTimeSinceAction=0;
   }
 
   // KNAPP 2 
-  if (buttonPressed1 && drawn && currentPage == 0) {
-    currentPage = 1;
+  else if (buttonPressed1 && drawn && elapsedTimeSinceAction >= REQUIREDTIMEBETWEENACTIONS) {
+    currentPage += 1;
     drawn = false;
+    elapsedTimeSinceAction = 0;
   }
+  // Refreshes the page and draws page number
   if (!drawn) {
-    //Rensar Skärmen, sätter text färg och storlek
     tft.fillScreen(TFT_BLACK);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.setTextSize(2);
-
-    //Ritar rätt sida
-    if (currentPage == 0) {
-      tft.drawString("Hello student", 10, 10);
-      tft.drawString(":)", 10, 50);
-    }
-    else if (currentPage == 1) {
-      tft.drawString("Edil", 10, 10);
-      tft.drawString("Gustav", 30, 50);
-      tft.drawString("William", 50, 90);
-    }
-    drawn = true;
+    String Text = String(currentPage);
+    tft.drawString(Text,300,150);
   }
+  // Draws content on page 0
+  if (currentPage == 0 && !drawn) {
+    tft.drawString("Hello student", 10, 10);
+    tft.drawString(":)", 10, 50);
+  }
+  // Draws content on page 1
+  else if (currentPage == 1 && !drawn) {
+    tft.drawString("Edil", 10, 10);
+    tft.drawString("Gustav", 30, 50);
+    tft.drawString("William", 50, 90);
+  }
+  //Make sure its not drawn repeatedly
+  drawn = true;
 }
+
+
 
 // TFT Pin check
   //////////////////
