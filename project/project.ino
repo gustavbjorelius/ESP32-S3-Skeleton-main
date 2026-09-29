@@ -116,7 +116,17 @@ void loop() {
     //Ritar rätt sida
     if (currentPage == 0) {
       tft.drawString("Hello student", 10, 10);
-      tft.drawString(":)", 10, 50);
+      tft.drawString("Grupp 2", 10, 150);
+      tft.drawString("V0.3", 270, 150);
+      // Yellow face
+      tft.fillCircle(160, 80, 30, TFT_YELLOW);
+      // Black eyes
+      tft.fillCircle(150, 72, 3, TFT_BLACK);
+      tft.fillCircle(170, 72, 3, TFT_BLACK);
+      // Black smile
+      tft.drawLine(148, 88, 155, 94, TFT_BLACK);
+      tft.drawLine(155, 94, 165, 94, TFT_BLACK);
+      tft.drawLine(165, 94, 172, 88, TFT_BLACK);
     }
     else if (currentPage == 1) {
       tft.drawString("Edil", 10, 10);
