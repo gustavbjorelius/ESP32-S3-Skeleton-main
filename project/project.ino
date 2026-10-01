@@ -13,45 +13,33 @@
 
 
 // This is the wifi settings. We assume Gustavs mobile hotspot with ssid and password 
-String ssid = "GB";
-String password = "administrator";
+/*String ssid = "GB";
+String password = "administrator";  */
 
 // "tft" is the graphics libary, which has functions to draw on the screen
 TFT_eSPI tft = TFT_eSPI();
 
-// Display dimentions
 // this is simply the screen size in pixels 
 #define DISPLAY_WIDTH 320
 #define DISPLAY_HEIGHT 170
 
-// idk this sets a variable to so we can have wifi for no reason? 
-WiFiClient wifi_client;
+// För Wifi
+//WiFiClient wifi_client;
 
-/**
- * Setup function
- * This function is called once when the program starts to initialize the program
- * and set up the hardware.
- * Carefull when modifying this function.
- */
 void setup() {
-  // Initialize Serial for debugging
-  // idk what this means? 
+  // Setup kod som kom med Skeleton
   Serial.begin(115200);
-  // Wait for the Serial port to be ready
-  // what is serial port? 
-  // i suppose it's the usbc? 
   while (!Serial);
-  // this doesn't happen really, it just
   Serial.println("Starting ESP32 program...");
   tft.init();
   tft.setRotation(1);
   tft.fillScreen(TFT_BLACK);
 
-  // this contros the buttons
+  // this controls the buttons
   pinMode(PIN_BUTTON_1, INPUT_PULLUP);
   pinMode(PIN_BUTTON_2, INPUT_PULLUP);
-
-  // Connect to WIFI
+  
+  // Vi valde att Kommentera ut Wifi delen eftersom vi inte behöver den just nu och för att den tar massa tid vid start ibland.
   /*
   WiFi.begin(ssid, password);
 
@@ -72,27 +60,17 @@ void setup() {
 
 }
 
-/**
- * This is the main loop function that runs continuously after setup.
- * Add your code here to perform tasks repeatedly.
- */
-
 // initialize the variable that is about the pages
 int currentPage = 0; 
 
 bool buttonPressed0 = false; 
 bool buttonPressed1 = false; 
+
 //Sant om current page är utritad
 bool drawn = false;
 
-
-// TODOs
-
-// we want to have is screen 1 (the first we see before we press any button) 'Group 2'
-// upon button press, we have 
-
 void loop() {
-
+  // Hämta button states
   buttonPressed0 = (digitalRead(PIN_BUTTON_1) == LOW);
   buttonPressed1 = (digitalRead(PIN_BUTTON_2) == LOW);
 
@@ -107,6 +85,7 @@ void loop() {
     currentPage = 1;
     drawn = false;
   }
+  // Ser till att det endast ritas om det inte redan har blivit ritat.
   if (!drawn) {
     //Rensar Skärmen, sätter text färg och storlek
     tft.fillScreen(TFT_BLACK);
@@ -117,13 +96,11 @@ void loop() {
     if (currentPage == 0) {
       tft.drawString("Hello student", 10, 10);
       tft.drawString("Grupp 2", 10, 150);
-      tft.drawString("V0.3", 270, 150);
-      // Yellow face
+      tft.drawString("V0.4", 270, 150);
+      // Smiley
       tft.fillCircle(160, 80, 30, TFT_YELLOW);
-      // Black eyes
       tft.fillCircle(150, 72, 3, TFT_BLACK);
       tft.fillCircle(170, 72, 3, TFT_BLACK);
-      // Black smile
       tft.drawLine(148, 88, 155, 94, TFT_BLACK);
       tft.drawLine(155, 94, 165, 94, TFT_BLACK);
       tft.drawLine(165, 94, 172, 88, TFT_BLACK);
