@@ -2,6 +2,7 @@
 #include <esp_task_wdt.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+// if it's grayed out it's not used 
 #include "esp_adc_cal.h"
 #include <SPI.h>
 #include "pin_config.h"
@@ -12,7 +13,7 @@
 #include <time.h>
 
 
-// This is the wifi settings. We assume Gustavs mobile hotspot with ssid and password 
+// wifi settings; we assume Gustavs mobile hotspot with ssid and password 
 /*String ssid = "GB";
 String password = "administrator";  */
 
@@ -23,18 +24,17 @@ TFT_eSPI tft = TFT_eSPI();
 #define DISPLAY_WIDTH 320
 #define DISPLAY_HEIGHT 170
 
-// För Wifi
-//WiFiClient wifi_client;
+// För Wifi 
+//WiFiClient wifi_client; (outcommented!)
 
-void setup() {
-  // Setup kod som kom med Skeleton
-  Serial.begin(115200);
-  while (!Serial);
+void setup() { // runs once on start 
+  Serial.begin(115200); // serial communicaiton at that many bits per second 
+  while (!Serial); // waits until serial is ready
   Serial.println("Starting ESP32 program...");
-  tft.init();
-  tft.setRotation(1);
+  tft.init(); // initializes the display
+  tft.setRotation(1); // set display to landscape
   tft.fillScreen(TFT_BLACK);
-  // this controls the buttons
+  // this controls the buttons, HIGH when not pressed, LOW when pressed 
   pinMode(PIN_BUTTON_1, INPUT_PULLUP);
   pinMode(PIN_BUTTON_2, INPUT_PULLUP);
   
@@ -61,45 +61,55 @@ void setup() {
 
 // initialize the variable that is about the pages
 int currentPage = 0; 
-//Sant om current page är utritad
+// Sant om current page är utritad
 bool drawn = false;
-//Variablar som ser till att inga missinputs sker.
+// Variablar som ser till att inga missinputs sker.
 
-int startInputTime;
-bool inputTimerOn = false;
-// I milisekunder
-const int REQUIREDTIME = 500;
+int startInputTime; // timestamp when input began 
+bool inputTimerOn = false; // if the timer is on, then don't update the timestamp 
+const int REQUIREDTIMEFORINPUT = 500; // ms
 
-//Timer
+// Timer
 enum TimerState {
   WORK = 25,
   SHORT_BREAK = 5,
   LONG_BREAK = 15
 };
-TimerState timerState = WORK;
+TimerState timerState = WORK; 
+// the timer starts in an OFF state
 bool timerRunning = false;
+// timestamp in ms, where the latest second was counted
 int oldSecond;
+// the amount of time left in this iteration, in "Work Time" / "Break Time" / "Long Break Time"
 int timeLeft = timerState;
+// this is to define the initial iteration of the pomodoro timer  
 int currentIteration = 1;
+// off by one error
+// it starts on one, so it throw away the first index, so we'll only have 3 iterations of Work Time
 const int REQUIREDITERATIONSFORLONGBREAK = 4;
 
-void loop() {
+void loop() { // 
   int currentTimeSinceStart = millis();
   // Hämta button states
   bool buttonPressed0 = (digitalRead(PIN_BUTTON_1) == LOW);
   bool buttonPressed1 = (digitalRead(PIN_BUTTON_2) == LOW);
-  // Lägger till en delay på inputs så att de inte spammas varje frame.
+  // records when a button is first pressed
   if ((buttonPressed0 || buttonPressed1) && !inputTimerOn) {
     startInputTime = currentTimeSinceStart;
     inputTimerOn = true;
+  // resets timer when BOTH buttons are released
   } else if (!(buttonPressed0 || buttonPressed1)) {
     inputTimerOn = false;
   }
 
-  //Inputs
-  if (drawn && (currentTimeSinceStart - startInputTime >= REQUIREDTIME)) {
+  // Inputs 
+  // If screen drawn && at least 500ms passed since the last timestamp 
+  if (drawn && (currentTimeSinceStart - startInputTime >= REQUIREDTIMEFORINPUT)) {
+    // reset the timestamp for a new 500ms preiod 
     startInputTime = currentTimeSinceStart;
-    //Båda Knappar
+
+    // Båda Knappar
+    // if both buttons are pressed within the 500ms window, then show the page for the pomodoro 
     if (buttonPressed0 && buttonPressed1) {
       if (currentPage != 2) {
         currentPage = 2;
@@ -109,6 +119,7 @@ void loop() {
         drawn = false;
       }
     }
+
     // KNAPP 0
     else if (buttonPressed0) {
       if (currentPage == 1) {
@@ -140,10 +151,9 @@ void loop() {
       }
     }
   }
-  //Timer
-  //Kollar om timer är igång
+  // Timer
   if (drawn && timerRunning) {
-    //Kollar om det gått en sekund
+    // Kollar om det gått en sekund
     if (currentTimeSinceStart - oldSecond >= 1000) {
       timeLeft--;
       oldSecond = currentTimeSinceStart;
@@ -151,7 +161,8 @@ void loop() {
         drawn = false;    
       }
     }
-    //Om timern är slut
+
+    // Om timern är slut
     if (timeLeft == 0) {
       if (timerState == WORK) {
         currentIteration++;
@@ -164,23 +175,23 @@ void loop() {
       } else {
         timerState = WORK;
       }
-      //Sätter timern till tiden för typen.
+      // Sätter timern till tiden för typen.
       timeLeft = timerState;
     }
   }
 
   // Ser till att det endast ritas om det inte redan har blivit ritat.
   if (!drawn) {
-    //Rensar Skärmen, sätter text färg och storlek
+    // Rensar Skärmen, sätter text färg och storlek
     tft.fillScreen(TFT_BLACK);
     tft.setTextColor(TFT_WHITE);
     tft.setTextSize(2);
 
-    //Ritar rätt sida
+    // ritar första sidan (init page)
     if (currentPage == 0) {
       tft.drawString("Hello student", 10, 10);
       tft.drawString("Grupp 2", 10, 150);
-      tft.drawString("V0.5", 270, 150);
+      tft.drawString("V0.6", 270, 150);
       // Smiley
       tft.fillCircle(160, 80, 30, TFT_YELLOW);
       tft.fillCircle(150, 72, 3, TFT_BLACK);
@@ -189,19 +200,19 @@ void loop() {
       tft.drawLine(155, 94, 165, 94, TFT_BLACK);
       tft.drawLine(165, 94, 172, 88, TFT_BLACK);
     }
-    else if (currentPage == 1) {
+    else if (currentPage == 1) { // second page (teams page)
       tft.drawString("Edil", 10, 10);
       tft.drawString("Gustav", 30, 50);
       tft.drawString("William", 50, 90);
     }
-    else if (currentPage == 2) {
+    else if (currentPage == 2) { // third page (pomodoro page)
       if (timerState == WORK) {
-        tft.drawString("Work",10,10);
+        tft.drawString("Work Time",10,10);
       } else if (timerState == SHORT_BREAK) {
-        tft.drawString("Break",10,10);
+        tft.drawString("Break Time",10,10);
       } else {
         tft.setTextColor(TFT_GREEN);
-        tft.drawString("Break",10,10);
+        tft.drawString("Long Break Time",10,10);
       }
       tft.setTextColor(TFT_WHITE);
       String timerString = "00:";
